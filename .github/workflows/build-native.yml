@@ -1,0 +1,100 @@
+name: Build Linux and macOS packages
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: ${{ matrix.platform }}-${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: linux
+            arch: amd64
+            runner: ubuntu-latest
+            appimage_arch: x86_64
+            deb_arch: amd64
+          - platform: linux
+            arch: arm64
+            runner: ubuntu-24.04-arm
+            appimage_arch: aarch64
+            deb_arch: arm64
+          - platform: macos
+            arch: x64
+            runner: macos-15-intel
+          - platform: macos
+            arch: arm64
+            runner: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt pyinstaller
+
+      - name: Build native executable
+        shell: bash
+        run: pyinstaller --clean --noconfirm openlist-episode-renamer.spec
+
+      - name: Package Linux AppImage and deb
+        if: matrix.platform == 'linux'
+        shell: bash
+        env:
+          APPIMAGE_ARCH: ${{ matrix.appimage_arch }}
+          DEB_ARCH: ${{ matrix.deb_arch }}
+        run: |
+          set -euo pipefail
+          curl -fsSL "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-${APPIMAGE_ARCH}.AppImage" -o appimagetool
+          chmod +x appimagetool
+          mkdir -p AppDir/usr/bin
+          cp dist/openlist-episode-renamer AppDir/usr/bin/
+          cp packaging/icon.png AppDir/openlist-episode-renamer.png
+          printf '%s\n' \
+            '[Desktop Entry]' 'Type=Application' 'Name=OpenList Episode Rename' \
+            'Comment=OpenList media batch rename tool' 'Exec=openlist-episode-renamer' \
+            'Icon=openlist-episode-renamer' 'Terminal=true' 'Categories=Utility;' \
+            > AppDir/openlist-episode-renamer.desktop
+          cat > AppDir/AppRun <<'EOF'
+          #!/bin/sh
+          HERE="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+          exec "$HERE/usr/bin/openlist-episode-renamer" "$@"
+          EOF
+          chmod +x AppDir/AppRun
+          ARCH="${APPIMAGE_ARCH}" ./appimagetool --appimage-extract-and-run \
+            AppDir "dist/openlist-episode-renamer-linux-${APPIMAGE_ARCH}.AppImage"
+          bash scripts/build-deb.sh dist/openlist-episode-renamer "1.0.0" dist "${DEB_ARCH}"
+          mv "dist/openlist-episode-renamer_1.0.0_${DEB_ARCH}.deb" \
+            "dist/openlist-episode-renamer-linux-${DEB_ARCH}.deb"
+          rm -f dist/openlist-episode-renamer
+
+      - name: Package macOS DMG
+        if: matrix.platform == 'macos'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dmg-root
+          cp dist/openlist-episode-renamer dmg-root/
+          cp LICENSE dmg-root/ 2>/dev/null || true
+          printf '%s\n' \
+            'OpenList Episode Rename (macOS)' '' \
+            'Run ./openlist-episode-renamer, then open http://127.0.0.1:8000' \
+            > dmg-root/README.txt
+          hdiutil create -volname 'OpenList Episode Rename' -srcfolder dmg-root \
+            -ov -format UDZO "dist/openlist-episode-renamer-macos-${{ matrix.arch }}.dmg"
+          rm -f dist/openlist-episode-renamer
+
+      - name: Upload package
+        uses: actions/upload-artifact@v4
+        with:
+          name: openlist-episode-renamer-${{ matrix.platform }}-${{ matrix.arch }}
+          path: dist/*
