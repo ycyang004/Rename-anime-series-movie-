@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenList · 剧集重命名</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/element-plus"></script>
+    <script src="https://unpkg.com/@element-plus/icons-vue"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --el-color-primary: #0071e3;
+            --el-color-success: #0a7a3d;
+            --el-color-warning: #e08600;
+            --el-color-danger: #e5484d;
+            --el-color-error: #e5484d;
+            --bg: radial-gradient(640px 460px at 14% 6%, rgba(0, 113, 227, 0.08), transparent 62%),
+                radial-gradient(780px 560px at 90% 8%, rgba(41, 151, 255, 0.06), transparent 62%),
+                radial-gradient(880px 640px at 55% 100%, rgba(83, 165, 255, 0.08), transparent 60%),
+                linear-gradient(165deg, #eef1f7 0%, #e2e8f2 100%);
+            --glass: rgba(255, 255, 255, 0.72);
+            --glass-hover: rgba(255, 255, 255, 0.9);
+            --border: rgba(0, 0, 0, 0.10);
+            --border-strong: rgba(0, 0, 0, 0.18);
+            --text: #1d1d1f;
+            --text-2: #6e6e73;
+            --text-3: #86868b;
+            --accent: #0071e3;
+            --accent-2: #2997ff;
+            --accent-grad: linear-gradient(135deg, #0071e3, #2997ff);
+            --accent-grad-2: linear-gradient(135deg, #2997ff, #0071e3);
+            --card-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+            --row-hover: rgba(0, 113, 227, 0.06);
+            --input-bg: #ffffff;
+            --tag-bg: rgba(0, 113, 227, 0.08);
+            --ok: #0a7a3d;
+            --err: #e5484d;
+            --el-font-size-base: 15px;
+            --el-font-size-small: 14px;
+            --el-font-size-medium: 15px;
+            --el-font-size-large: 17px;
+            --glow-soft: rgba(0, 113, 227, 0.12);
+            --glow-ico: rgba(0, 113, 227, 0.25);
+            --glow-btn: rgba(0, 113, 227, 0.30);
+            --glow-btn-h: rgba(0, 113, 227, 0.42);
+        }
+        html[data-theme="light"] {
+            --el-bg-color: #ffffff;
+            --el-bg-color-overlay: #ffffff;
+            --el-fill-color-blank: #ffffff;
+            --el-fill-color-light: #f5f5f7;
+            --el-text-color-primary: #1d1d1f;
+            --el-text-color-regular: #1d1d1f;
+            --el-text-color-secondary: #6e6e73;
+            --el-border-color: rgba(0, 0, 0, 0.12);
+            --el-border-color-light: rgba(0, 0, 0, 0.08);
+            --el-border-color-lighter: rgba(0, 0, 0, 0.06);
+            --el-border-color-extra-light: rgba(0, 0, 0, 0.04);
+            --el-input-focus-border-color: #0071e3;
+        }
+        html[data-theme="dark"] {
+            --accent: #ff758c;
+            --accent-2: #ff9a76;
+            --accent-grad: linear-gradient(135deg, #ff758c, #ff9a76);
+            --accent-grad-2: linear-gradient(135deg, #ff7eb3, #c86bff);
+            --el-color-primary: #ff758c;
+            --bg: linear-gradient(135deg, #12101a 0%, #171426 40%, #1e1526 100%);
+            --glass: rgba(35, 30, 52, 0.62);
+            --glass-hover: rgba(46, 38, 68, 0.85);
+            --border: rgba(255, 117, 140, 0.20);
+            --border-strong: rgba(255, 117, 140, 0.45);
+            --text: #f3e8ef;
+            --text-2: #b8a3b0;
+            --text-3: #7d6a76;
+            --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+            --row-hover: rgba(255, 117, 140, 0.10);
+            --input-bg: rgba(25, 20, 40, 0.65);
+            --tag-bg: rgba(255, 117, 140, 0.14);
+            --glow-soft: rgba(255, 117, 140, 0.20);
+            --glow-ico: rgba(255, 117, 140, 0.32);
+            --glow-btn: rgba(255, 117, 140, 0.35);
+            --glow-btn-h: rgba(255, 117, 140, 0.5);
+            --el-bg-color: #201a2e;
+            --el-bg-color-overlay: #241d33;
+            --el-fill-color-blank: #241d33;
+            --el-fill-color: rgba(255,117,140,0.12);
+            --el-text-color-primary: #f3e8ef;
+            --el-text-color-regular: #cbb8c5;
+            --el-text-color-secondary: #9a8794;
+            --el-border-color: rgba(255,117,140,0.25);
+            --el-border-color-light: rgba(255,117,140,0.18);
+            --el-border-color-lighter: rgba(255,117,140,0.14);
+            --el-border-color-extra-light: rgba(255,117,140,0.10);
+            --el-input-focus-border-color: #ff758c;
+        }
+        html { height: 100%; }
+        body {
+            font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", -apple-system, sans-serif;
+            background: var(--bg); background-attachment: fixed;
+            color: var(--text); min-height: 100vh; font-size: 15px; line-height: 1.6;
+            transition: color .3s;
+        }
+        [v-cloak] { display: none; }
+        .glass {
+            background: var(--glass);
+            backdrop-filter: blur(20px) saturate(1.4);
+            -webkit-backdrop-filter: blur(20px) saturate(1.4);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            box-shadow: var(--card-shadow);
+            transition: background .3s;
+        }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+
+        /* ---------- 登录页 ---------- */
+        .login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+        .login-card {
+            width: 520px; max-width: 100%; padding: 44px 44px 36px;
+            text-align: center; position: relative; overflow: hidden;
+        }
+        .login-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 5px;
+            background: var(--accent-grad-2);
+        }
+        .login-logo {
+            width: 68px; height: 68px; margin: 6px auto 20px; border-radius: 20px;
+            background: var(--accent-grad-2); display: flex; align-items: center; justify-content: center;
+            font-size: 32px; box-shadow: 0 8px 24px var(--glow-ico);
+        }
+        .login-title { font-size: 30px; font-weight: 800; letter-spacing: 1px; }
+        .login-sub { font-size: 16px; font-weight: 600; color: var(--text-2); margin: 10px 0 28px; }
+        .login-card .el-form { text-align: left; }
+        .login-card .el-form-item { margin-bottom: 20px; }
+        .login-card .el-input { width: 100%; }
+        .login-card .el-form-item__label { font-size: 15px; font-weight: 600; }
+        .login-hint { font-size: 14px; color: var(--text-3); margin-top: 6px; line-height: 1.7; }
+        .url-helper { display: flex; flex-direction: column; gap: 8px; margin: -4px 0 18px; }
+        .url-row { display: flex; align-items: stretch; gap: 8px; }
+        .url-tag {
+            flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;
+            font-size: 13px; font-weight: 800; letter-spacing: .5px;
+            border-radius: 10px; padding: 3px 10px; color: #fff; width: 52px; height: 100%; min-height: 34px;
+        }
+        .url-tag.docker { background: linear-gradient(135deg, #4b8fe0, #6aa9ff); }
+        .url-tag.local { background: linear-gradient(135deg, #5ab58a, #7fd0a8); }
+        .url-val {
+            flex: 1; min-width: 0; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            border: 1px solid var(--border); background: var(--input-bg); color: var(--text-2);
+            border-radius: 10px; padding: 6px 12px; font-size: 14px; font-weight: 600; font-family: ui-monospace, monospace;
+            cursor: pointer; transition: all .18s;
+        }
+        .url-val:hover { border-color: var(--accent); color: var(--accent); background: var(--tag-bg); }
+        .login-card .el-input__wrapper { border-radius: 10px; }
+        .login-btn {
+            width: 100%; height: 50px; margin-top: 10px; border-radius: 13px; border: none;
+            background: var(--accent-grad); color: #fff; font-size: 17px; font-weight: 700;
+            cursor: pointer; transition: all .25s; letter-spacing: 3px;
+        }
+        .login-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px var(--glow-btn-h); }
+        .login-btn:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+        .login-error { margin-top: 14px; font-size: 15px; font-weight: 600; color: var(--err); min-height: 20px; }
+        .login-badges { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+        .login-badges img { height: 22px; border-radius: 6px; box-shadow: 0 2px 8px var(--glow-soft); transition: transform .2s; }
+        .login-badges a:hover img { transform: translateY(-2px); }
+
+        /* ---------- 主布局 ---------- */
+        .main-layout { display: flex; min-height: 100vh; gap: 18px; padding: 18px; }
+        .sidebar { width: 340px; flex-shrink: 0; display: flex; flex-direction: column; overflow: hidden; max-height: calc(100vh - 36px); position: sticky; top: 18px; }
+        .sidebar.side-rail { width: 46px; padding: 12px 6px; align-items: center; justify-content: flex-start; }
+        .sidebar.side-rail .btn-icon { font-size: 18px; }
+        .content { flex: 1; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+
+        .side-head { padding: 16px 18px 12px; border-bottom: 1px solid var(--border); }
+        .side-title { font-size: 18px; font-weight: 800; color: var(--text-2); display: flex; align-items: center; gap: 8px; }
+        .side-tools { display: flex; align-items: center; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+        .crumbs { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 10px; font-size: 15px; }
+        .crumb {
+            padding: 3px 10px; border-radius: 8px; cursor: pointer; color: var(--text-2);
+            background: var(--tag-bg); white-space: nowrap; max-width: 150px; overflow: hidden; text-overflow: ellipsis;
+            transition: all .2s;
+        }
+        .crumb:hover, .crumb.active { background: var(--accent); color: #fff; }
+        .side-body { flex: 1; overflow-y: auto; padding: 10px; }
+        .tree-row {
+            display: flex; align-items: center; gap: 8px; padding: 9px 10px; border-radius: 10px;
+            cursor: pointer; font-size: 15px; transition: background .18s; position: relative;
+            white-space: nowrap; overflow: hidden;
+        }
+        .tree-row:hover { background: var(--row-hover); }
+        .tree-row .name { flex: 1; overflow: hidden; text-overflow: ellipsis; }
+        .tree-row .icon { font-size: 17px; flex-shrink: 0; }
+        .tree-row .size { font-size: 14px; color: var(--text-3); flex-shrink: 0; }
+        .tree-row .ren {
+            opacity: 0; border: none; background: var(--tag-bg); color: var(--accent);
+            border-radius: 7px; cursor: pointer; padding: 2px 7px; font-size: 13px; flex-shrink: 0;
+            transition: opacity .18s;
+        }
+        .tree-row:hover .ren { opacity: 1; }
+        .tree-row.file { margin-left: 14px; }
+        .tree-empty { text-align: center; color: var(--text-3); font-size: 14px; padding: 30px 10px; }
+
+        /* ---------- 顶栏 ---------- */
+        .topbar {
+            display: flex; align-items: center; gap: 12px; padding: 14px 20px;
+            position: sticky; top: 18px; z-index: 10;
+        }
+        .topbar .path-label { font-size: 18px; font-weight: 700; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .chip {
+            display: inline-flex; align-items: center; gap: 6px; font-size: 14px;
+            padding: 5px 12px; border-radius: 20px; background: var(--tag-bg); color: var(--text-2);
+            border: 1px solid var(--border);
+        }
+        .chip .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 8px var(--ok); }
+        .chip.bad .dot { background: var(--err); box-shadow: 0 0 8px var(--err); }
+        .chip.badv { cursor: pointer; }
+        .chip.badv:hover { border-color: var(--border-strong); }
+
+        /* ---------- 面板通用 ---------- */
+        .panel { padding: 20px; }
+        .panel-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+        .panel-title { font-size: 18px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+        .panel-title .ico {
+            width: 30px; height: 30px; border-radius: 9px; background: var(--accent-grad-2);
+            display: flex; align-items: center; justify-content: center; font-size: 15px; color: #fff;
+            box-shadow: 0 4px 12px var(--glow-ico);
+        }
+        .muted { font-size: 14px; color: var(--text-3); }
+
+        /* ---------- TMDB 面板 ---------- */
+        .tmdb-search { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; --el-input-height: 42px; }
+        .tmdb-search .grow { flex: 1; min-width: 200px; }
+        .tmdb-search .el-input__wrapper,
+        .tmdb-search .el-input-number .el-input__wrapper { border-radius: 10px; min-height: 42px; }
+        .tmdb-search .btn-ghost { min-height: 42px; }
+        .tmdb-results { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+        .tmdb-card {
+            display: flex; align-items: flex-start; gap: 10px;
+            min-width: 210px; max-width: 300px; padding: 10px 12px; border-radius: 13px;
+            border: 1.5px solid var(--border); background: var(--glass); cursor: pointer;
+            transition: all .2s;
+        }
+        .tmdb-card:hover { transform: translateY(-2px); border-color: var(--border-strong); box-shadow: 0 6px 18px var(--glow-soft); }
+        .tmdb-card.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+        .tmdb-card.active .tmdb-card-name { color: #fff; }
+        .tmdb-card img { width: 60px; height: 88px; border-radius: 8px; object-fit: cover; flex-shrink: 0; background: var(--tag-bg); }
+        .tmdb-card-body { min-width: 0; padding-top: 2px; }
+        .tmdb-card-body .tmdb-card-name { font-size: 15px; font-weight: 600; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+
+        /* ---------- 表格 ---------- */
+        .tbl { width: 100%; min-width: 0; border-collapse: separate; border-spacing: 0; font-size: 15px; }
+        .tbl thead th {
+            padding: 12px 12px; text-align: left; font-size: 15px; color: var(--text-2);
+            border-bottom: 1px solid var(--border); font-weight: 600; letter-spacing: .5px;
+            position: sticky; top: 0; background: transparent; z-index: 1;
+        }
+        .tbl td { padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        .tbl tr { transition: background .15s; }
+        .tbl tbody tr:hover td { background: var(--row-hover); }
+        .tbl .old { font-family: ui-monospace, "SF Mono", Consolas, monospace; font-size: 15px; word-break: break-all; white-space: normal; }
+        .tbl .new { font-family: ui-monospace, "SF Mono", Consolas, monospace; font-size: 15px; color: var(--accent); font-weight: 600; word-break: break-all; white-space: normal; }
+        .tbl input[type=text], .tbl input[type=number] {
+            width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: 7px 10px;
+            font-size: 15px; background: var(--input-bg); color: var(--text); outline: none; transition: border .2s;
+        }
+        .tbl input:focus { border-color: var(--accent); }
+        .tbl .num { width: 66px !important; text-align: center; }
+        .tbl .tags { min-width: 130px; }
+        .tbl td.ep-cell input { transition: border-color .2s, background .2s, color .2s; }
+        .tbl td.ep-cell.filled input { border-color: var(--ok); background: rgba(33, 186, 114, 0.10); color: var(--ok); }
+        .tool-strip {
+            display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px;
+            margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--border);
+        }
+        .val-badge {
+            display: inline-block; min-width: 20px; text-align: center; font-size: 14px; padding: 2px 7px;
+            border-radius: 7px; margin-left: 8px; font-family: ui-monospace, monospace;
+            background: var(--tag-bg); color: var(--accent); vertical-align: middle;
+        }
+        .val-badge.ok { background: rgba(33,186,114,.14); color: var(--ok); }
+        .val-badge.bad { background: rgba(245,108,108,.14); color: var(--err); }
+
+        /* ---------- 操作区 ---------- */
+        .actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .btn-main {
+            border: none; border-radius: 11px; padding: 11px 26px; font-size: 15px; font-weight: 600;
+            background: var(--accent-grad); color: #fff; cursor: pointer; transition: all .25s;
+            box-shadow: 0 4px 14px var(--glow-btn); letter-spacing: 1px; display: inline-flex; align-items: center; gap: 8px;
+        }
+        .btn-main:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 8px 22px var(--glow-btn-h); }
+        .btn-main:disabled { opacity: .5; cursor: not-allowed; }
+        .btn-ghost {
+            border: 1px solid var(--border-strong); border-radius: 11px; padding: 10px 18px; font-size: 15px;
+            background: transparent; color: var(--accent); cursor: pointer; transition: all .2s;
+            display: inline-flex; align-items: center; gap: 6px; font-weight: 500;
+        }
+        .btn-ghost:hover { background: var(--tag-bg); }
+        .btn-ghost.active { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 3px 10px var(--glow-btn); }
+        .btn-ghost.active:hover { background: var(--accent-2); border-color: var(--accent-2); color: #fff; }
+        .btn-icon {
+            border: none; background: transparent; cursor: pointer; font-size: 18px; color: var(--text-2);
+            width: 34px; height: 34px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center;
+            transition: all .2s;
+        }
+        .btn-icon:hover { background: var(--tag-bg); color: var(--accent); }
+        .btn-icon.on { background: var(--tag-bg); color: var(--accent); box-shadow: inset 0 0 0 1.5px var(--accent); }
+        .btn-ghost.on { background: var(--tag-bg); border-color: var(--accent); color: var(--accent); }
+        .btn-up {
+            border: 1px solid var(--border-strong); background: var(--tag-bg); color: var(--accent);
+            border-radius: 8px; padding: 2px 9px; font-size: 14px; cursor: pointer; line-height: 1.6;
+            margin-left: 10px; transition: all .2s; flex-shrink: 0;
+        }
+        .btn-up:not(:disabled):hover { background: var(--accent); color: #fff; }
+        .btn-up:disabled { opacity: .45; cursor: not-allowed; }
+        .tool-item { display: inline-flex; align-items: center; gap: 6px; }
+        .tool-label { font-size: 14px; color: var(--text-2); white-space: nowrap; }
+        .tag-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+        .param-input {
+            height: 44px; width: 290px; display: flex; align-items: center; gap: 6px;
+            padding: 4px 10px; border-radius: 11px; box-sizing: border-box;
+            background: var(--input-bg); border: 1px solid var(--border-strong);
+            overflow-x: auto; font-size: 15px;
+        }
+        .param-input input {
+            flex: 1; min-width: 80px; height: 100%; border: none; outline: none;
+            background: transparent; font-size: 15px; color: var(--text-1);
+        }
+        .param-input input::placeholder { color: var(--text-3); font-size: 15px; }
+        .param-chip {
+            display: inline-flex; align-items: center; padding: 0 8px; height: 26px;
+            border-radius: 7px; background: var(--tag-bg); color: var(--accent);
+            font-size: 15px; white-space: nowrap; flex-shrink: 0;
+        }
+        .param-x { cursor: pointer; opacity: .7; margin-left: 5px; font-size: 13px; font-weight: 400; }
+        .param-x:hover { opacity: 1; }
+        .param-presets { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+        .param-presets-label { font-size: 13px; color: var(--text-3); white-space: nowrap; }
+        .preset-chip {
+            display: inline-flex; align-items: center; height: 28px; padding: 0 10px; border-radius: 8px;
+            border: 1px dashed var(--border-strong); background: var(--input-bg); color: var(--text-2);
+            font-size: 14px; cursor: pointer; white-space: nowrap; transition: all .15s; user-select: none;
+        }
+        .preset-chip:hover { border-color: var(--accent); color: var(--accent); }
+        .preset-chip.active { background: var(--tag-bg); border: 1px solid var(--accent); color: var(--accent); }
+        .el-input-number .el-input-number__decrease,
+        .el-input-number .el-input-number__increase {
+            background: transparent; color: var(--text-2); border: none;
+        }
+        .el-input-number .el-input-number__decrease:not(.is-disabled):hover,
+        .el-input-number .el-input-number__increase:not(.is-disabled):hover {
+            background: var(--tag-bg); color: var(--accent);
+        }
+        .tool-divider { width: 1px; height: 26px; background: var(--border-strong); opacity: .5; flex-shrink: 0; }
+        .tmdb-poster-ph { width: 60px; height: 88px; border-radius: 8px; background: var(--tag-bg); flex-shrink: 0; }
+        .footer-bar { display: flex; align-items: center; gap: 14px; padding: 14px 20px; }
+        .footer-info { flex: 1; font-size: 15px; color: var(--text-2); }
+
+        /* ---------- 设置抽屉 ---------- */
+        .set-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 13px 0; border-bottom: 1px solid var(--border); }
+        .set-row:last-child { border-bottom: none; }
+        .set-label { font-size: 15px; font-weight: 600; }
+        .set-desc { font-size: 14px; color: var(--text-3); margin-top: 3px; line-height: 1.5; }
+        .set-row .el-input { width: 220px; }
+        .set-row .el-input-number { width: 130px; }
+
+        .empty-wrap { text-align: center; padding: 60px 0; color: var(--text-3); font-size: 15px; }
+        .table-wrap { max-height: calc(100vh - 250px); overflow: auto; border-radius: 12px; }
+        @media (max-width: 980px) {
+            .main-layout { flex-direction: column; }
+            .sidebar { width: 100%; max-height: 300px; position: static; }
+        }
+        @media (max-width: 480px) {
+            .login-card { padding: 32px 22px 28px; }
+        }
+    </style>
+</head>
+<body>
+<div id="app" v-cloak>
+    <!-- ============ 登录页 ============ -->
+    <div v-if="!loggedIn" class="login-wrap">
+        <div class="login-card glass">
+            <div class="login-logo">🎬</div>
+            <div class="login-title">OpenList · 剧集重命名</div>
+            <div class="login-sub">连接你的 OpenList，智能整理影视剧集文件</div>
+            <el-form @submit.prevent="doLogin">
+                <el-form-item label="OpenList 地址">
+                    <el-input v-model="loginForm.base_url" placeholder="http://127.0.0.1:5244" clearable></el-input>
+                </el-form-item>
+                <div class="url-helper">
+                    <div class="url-row">
+                        <span class="url-tag docker">Docker</span>
+                        <button type="button" class="url-val" @click="loginForm.base_url = 'http://host.docker.internal:5244'">
+                            http://host.docker.internal:5244
+                        </button>
+                    </div>
+                    <div class="url-row">
+                        <span class="url-tag local">本地</span>
+                        <button type="button" class="url-val" @click="loginForm.base_url = 'http://127.0.0.1:5244'">
+                            http://127.0.0.1:5244
+                        </button>
+                    </div>
+                </div>
+                <el-form-item label="用户名">
+                    <el-input v-model="loginForm.username" placeholder="用户名" clearable @keyup.enter="doLogin"></el-input>
+                </el-form-item>
+                <el-form-item label="密码">
+                    <el-input v-model="loginForm.password" type="password" placeholder="密码" show-password @keyup.enter="doLogin"></el-input>
+                </el-form-item>
+                <button class="login-btn" :disabled="loggingIn || !loginForm.username" @click="doLogin">
+                    {{ loggingIn ? '连接中…' : '连 接' }}
+                </button>
+                <div class="login-error">{{ loginError }}</div>
+                <div class="login-hint">仅需 OpenList 的账号与密码即可连接，无需额外配置令牌。凭据只保存在本机浏览器（localStorage）。<b>若 OpenList 也跑在 Docker 里</b>，请用 <b>http://host.docker.internal:5244</b>（容器名无关）。</div>
+                <div class="login-badges">
+                    <a href="https://github.com/KoBariDev" target="_blank" rel="noopener">
+                        <img src="https://img.shields.io/badge/作者-KoBariDev-4b8fe0?logo=github" alt="作者" title="作者: github.com/KoBariDev">
+                    </a>
+                    <a href="https://hub.131714.xyz" target="_blank" rel="noopener">
+                        <img src="https://img.shields.io/badge/博客-hub.131714.xyz-6aa9ff" alt="博客" title="博客: hub.131714.xyz">
+                    </a>
+                    <a href="https://github.com/kobaridev/openlist-episode-renamer" target="_blank" rel="noopener">
+                        <img src="https://img.shields.io/badge/仓库-openlist--episode--renamer-21ba72?logo=github" alt="仓库" title="仓库: github.com/kobaridev/openlist-episode-renamer">
+                    </a>
+                </div>
+            </el-form>
+        </div>
+    </div>
+
+    <!-- ============ 主界面 ============ -->
+    <div v-else class="main-layout">
+        <!-- 侧栏 -->
+        <aside class="sidebar glass" v-if="!sidebarCol">
+            <div class="side-head">
+                <div class="side-title">📂 文件浏览</div>
+                <div class="side-tools">
+                    <button class="btn-up" :disabled="currentPath === '/'" @click="goUp" title="返回上一级">⬆ 上一级</button>
+                    <el-tag size="small" type="success" effect="plain" style="margin-left:auto">{{ files.length }} 个文件</el-tag>
+                    <button class="btn-icon" style="margin-left:2px; font-size:16px" @click="sidebarCol = true" title="收起目录栏">«</button>
+                </div>
+                <div class="crumbs">
+                    <span class="crumb" v-for="(seg, i) in crumbPath" :key="i"
+                          :class="{ active: i === crumbPath.length - 1 && currentPath === seg }"
+                          @click="navigateTo(crumbs(i))">{{ seg === '/' ? '🏠 根目录' : seg }}</span>
+                </div>
+            </div>
+            <div class="side-body">
+                <div v-if="loading" class="tree-empty">加载中…</div>
+                <div v-else-if="!directories.length && !files.length" class="tree-empty">当前目录为空</div>
+                <template v-else>
+                    <div v-for="d in directories" :key="'d'+d.name" class="tree-row" @click="openDir(d.path)">
+                        <span class="icon">📁</span>
+                        <span class="name" :title="d.name">{{ d.name }}</span>
+                        <button class="ren" @click.stop="renameDir(d)" title="重命名目录">✎</button>
+                    </div>
+                    <div v-for="f in files" :key="'f'+f.name" class="tree-row file" @click="scrollToFile(f.name)">
+                        <span class="icon">{{ mediaExt(f.name) ? '🎞' : '📄' }}</span>
+                        <span class="name" :title="f.name">{{ f.name }}</span>
+                        <span class="size">{{ humanSize(f.size) }}</span>
+                    </div>
+                </template>
+            </div>
+        </aside>
+
+        <!-- 收起后的侧边细栏 -->
+        <aside class="sidebar glass side-rail" v-else>
+            <button class="btn-icon" @click="sidebarCol = false" title="展开目录栏">▶</button>
+        </aside>
+
+        <!-- 主内容 -->
+        <main class="content">
+            <!-- 顶栏 -->
+            <div class="topbar glass">
+                <span class="path-label" :title="currentPath">{{ currentPath }}</span>
+                <span class="chip" :class="{ bad: !health.openlist_ok }" @click="checkHealth" title="点击刷新连接状态">
+                    <span class="dot"></span>{{ health.logged_in ? 'OpenList · ' + health.user : '未登录' }}
+                </span>
+                <button class="btn-icon" @click="toggleTheme" :title="settings.theme === 'dark' ? '切换为浅色' : '切换为深色'">
+                    {{ settings.theme === 'dark' ? '☀️' : '🌙' }}
+                </button>
+                <button class="btn-icon" @click="openSettings" title="设置">⚙️</button>
+                <button class="btn-ghost" @click="logout" title="断开连接">退出</button>
+            </div>
+
+            <!-- 操作面板：剧集信息 + 重命名工具（可收缩） -->
+            <section class="panel glass">
+                <div class="panel-head">
+                    <span class="panel-title"><span class="ico">🎞</span>剧集信息 & 重命名工具</span>
+                    <span class="muted" style="margin-left:auto">
+                        <template v-if="toolsOpen">获取集名后自动填充下方列表</template>
+                        <template v-else>已取 {{ tmdb.epCount }} 个集名 · 第 {{ tmdb.season }} 季 · 起始 {{ epStart }} 集</template>
+                    </span>
+                    <button class="btn-icon" @click="toolsOpen = !toolsOpen" :title="toolsOpen ? '收起面板' : '展开面板'">{{ toolsOpen ? '▾' : '▸' }}</button>
+                </div>
+                <template v-if="toolsOpen">
+                    <div class="tmdb-search">
+                        <span class="tool-item">
+                            <button class="btn-ghost" :class="{ active: tmdb.mode === 'tv' }" @click="setTmdbMode('tv')">剧集</button>
+                            <button class="btn-ghost" :class="{ active: tmdb.mode === 'movie' }" @click="setTmdbMode('movie')">电影</button>
+                        </span>
+                        <el-input v-model="tmdb.keyword" placeholder="剧名，如：老友记" style="width:230px" clearable
+                                  @keyup.enter="tmdbSearch" :prefix-icon="Search"></el-input>
+                        <button class="btn-ghost" :disabled="tmdb.searching" @click="tmdbSearch">
+                            {{ tmdb.searching ? '搜索中…' : '🔍 搜索' }}
+                        </button>
+                        <button v-if="tmdb.selected && tmdb.mode === 'tv'" class="btn-ghost" :disabled="tmdb.fetching" @click="tmdbFetch">
+                            {{ tmdb.fetching ? '获取中…' : '⚡ 获取集名' }}
+                        </button>
+                        <button v-if="tmdb.selected && tmdb.mode === 'movie'" class="btn-ghost" @click="fillMovieTitle">应用电影名</button>
+                        <span v-if="tmdb.mode === 'tv'" class="tool-item"><span class="tool-label">季</span>
+                            <el-input-number :controls="false" v-model="tmdb.season" :min="1" :max="99" size="default" style="width:110px"></el-input-number>
+                        </span>
+                        <span v-if="tmdb.mode === 'tv'" class="tool-item"><span class="tool-label">起始集号</span>
+                            <el-input-number :controls="false" v-model="epStart" :min="1" :max="999" size="default" style="width:110px"></el-input-number>
+                        </span>
+                        <button v-if="tmdb.mode === 'tv'" class="btn-ghost" @click="applyEpisodeNumbers">应用</button>
+                    </div>
+                    <div v-if="tmdb.results.length" class="tmdb-results">
+                        <div v-for="r in tmdb.results" :key="r.id" class="tmdb-card"
+                             :class="{ active: tmdb.selected && tmdb.selected.id === r.id }"
+                             @click="selectTmdbResult(r)" :title="r.name">
+                            <img v-if="r.poster" :src="r.poster" alt="" loading="lazy">
+                            <div v-else class="tmdb-poster-ph"></div>
+                            <div class="tmdb-card-body">
+                                <div class="tmdb-card-name">{{ r.name }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div v-if="tmdb.mode === 'tv' && tmdb.epCount" class="muted" style="margin-top:12px">
+                        ✅ 已获取第 {{ tmdb.season }} 季 {{ tmdb.epCount }} 个集名
+                    </div>
+                </template>
+            </section>
+
+            <!-- 文件列表 -->
+            <section class="panel glass" v-if="rows.length">
+                <div class="panel-head">
+                    <span class="panel-title"><span class="ico">📝</span>文件列表{{ files.length ? '（' + files.length + ' 个文件）' : '' }}</span>
+                    <span class="muted" style="margin-left:auto">长文件名自动换行完整展示</span>
+                </div>
+                <div class="tag-bar">
+                    <div class="param-presets">
+                        <span class="param-presets-label">常用:</span>
+                        <span v-for="pr in mediaPresets" :key="pr" class="preset-chip"
+                              :class="{ active: mediaParams.includes(pr) }" @click="togglePreset(pr)">{{ pr }}</span>
+                    </div>
+                    <div class="param-input">
+                        <span v-for="(p,i) in mediaParams" :key="p + '-' + i" class="param-chip">
+                            {{ p }}<b class="param-x" title="移除" @click="mediaParams.splice(i,1)">✕</b>
+                        </span>
+                        <input type="text" v-model="paramDraft" placeholder="输入后按回车添加，如 1080p"
+                               @keydown.enter.prevent="addParam" @keydown.backspace.prevent="backspaceParam">
+                    </div>
+                    <button class="btn-ghost" @click="applyTags">应用参数</button>
+                </div>
+                <div class="table-wrap">
+                    <table class="tbl">
+                        <thead>
+                            <tr>
+                                <th>原文件名</th>
+                                <th style="width:110px">Season</th>
+                                <th style="width:110px">Episode</th>
+                                <th style="width:150px">集名（可选）</th>
+                                <th class="tags">参数</th>
+                                <th>新文件名（预览）</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="r in rows" :key="r.name" :id="'row-' + r.name">
+                                <td class="old" :title="r.name">{{ r.name }}
+                                    <span class="val-badge" :class="r.valid ? 'ok' : 'bad'">{{ r.valid ? '✓' : '?' }}</span>
+                                </td>
+                                <td><input class="num" type="text" v-model="r.info.season" @input="normalizeNum(r,'season')" @change="syncEpisodes()"></td>
+                                <td><input class="num" type="text" v-model="r.info.episode" @input="normalizeNum(r,'episode')" @change="syncEpisodes()"></td>
+                                <td class="ep-cell" :class="{ filled: r.ep_title }"><input type="text" v-model="r.ep_title" placeholder="集名" @change="syncEpisodes()"></td>
+                                <td><input type="text" v-model="r.tags" placeholder="如 1080p" @change="syncEpisodes()"></td>
+                                <td class="new" :title="previewName(r)">{{ previewName(r) }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="footer-bar">
+                    <span class="footer-info">
+                        共 {{ rows.length }} 项，将重命名 {{ renameableCount }} 项（模式：
+                        <b style="color:var(--accent)">{{ settings.delimiter }}</b> 分隔{{ useTitle ? '，含集名' : '' }}）
+                    </span>
+                    <button v-if="renamingDir" class="btn-ghost" @click="cancelDirRename">← 返回目录文件列表</button>
+                    <button class="btn-main" :disabled="!renameableCount || committing" @click="commitRename">
+                        {{ committing ? '提交中…' : '⚡ 确认重命名 ' + renameableCount + ' 个文件' }}
+                    </button>
+                </div>
+            </section>
+            <div class="empty-wrap glass" v-else-if="!loading">当前目录下没有文件可重命名</div>
+
+            <!-- 目录重命名条 -->
+            <section class="panel glass" v-if="renamingDir" style="border-color:var(--border-strong)">
+                <div class="panel-head">
+                    <span class="panel-title"><span class="ico">📁</span>重命名目录</span>
+                    <span class="muted">{{ currentPath }}</span>
+                </div>
+                <div class="actions">
+                    <el-input v-model="newDirName" style="width:340px" :placeholder="dirName"></el-input>
+                    <button class="btn-main" :disabled="!newDirName.trim() || newDirName.trim() === dirName || committing"
+                            @click="commitDirRename">
+                        {{ committing ? '提交中…' : dirName + ' → ' + (newDirName.trim() || '…') }}
+                    </button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- ============ 设置抽屉（T4） ============ -->
+    <el-drawer v-model="settingsOpen" :title="null" size="420px" direction="rtl" :with-header="true">
+        <template #header>
+            <div class="panel-title"><span class="ico">⚙️</span>设置</div>
+        </template>
+        <div style="padding: 4px 24px">
+            <div class="set-row">
+                <div>
+                    <div class="set-label">TMDB API Key</div>
+                    <div class="set-desc">配置后优先使用 TMDB REST API（更稳定）；留空则回退到网页抓取</div>
+                </div>
+            </div>
+            <el-input v-model="setForm.tmdb_api_key" placeholder="粘贴 API Key（v3）" show-password style="margin-bottom:14px"></el-input>
+            <div class="set-row">
+                <div>
+                    <div class="set-label">分隔符</div>
+                    <div class="set-desc">文件名各段之间的分隔字符，例如 . 或 -</div>
+                </div>
+                <el-input v-model="setForm.delimiter" style="width:90px" maxlength="4"></el-input>
+            </div>
+            <div class="set-desc" style="margin-top:14px; line-height:1.7">
+                其余选项（季数、起始集号、是否含集名、主题）已在主界面工具栏直接提供，无需在此设置。
+            </div>
+            <div class="actions" style="margin-top:22px">
+                <button class="btn-main" style="flex:1; justify-content:center" :disabled="savingSet" @click="saveSettings">
+                    {{ savingSet ? '保存中…' : '保 存 设 置' }}
+                </button>
+            </div>
+        </div>
+    </el-drawer>
+</div>
+<script>
+const { createApp, ref, reactive, computed, onMounted, watch } = Vue;
+const { ElMessage, ElMessageBox } = ElementPlus;
+const { Search } = ElementPlusIconsVue;
+
+const MEDIA_EXTS = ['mp4','mkv','avi','ts','flv','wmv','mov','m4v','webm','mpg','mpeg','3gp','asf','srt','ass','ssa'];
+const MEDIA_RE = new RegExp('\\.(' + MEDIA_EXTS.join('|') + ')$', 'i');
+
+function humanSize(b) {
+    if (b == null) return '';
+    if (b < 1024) return b + ' B';
+    const u = ['KB','MB','GB','TB']; let i = -1;
+    do { b /= 1024; i++; } while (b >= 1024 && i < u.length - 1);
+    return b.toFixed(1) + ' ' + u[i];
+}
+function parentOf(p) {
+    p = p.replace(/\/+$/, '');
+    const i = p.lastIndexOf('/');
+    return i <= 0 ? '/' : p.slice(0, i);
+}
+function dirNameOf(p) {
+    p = p.replace(/\/+$/, '');
+    return p.split('/').filter(Boolean).pop() || '';
+}
+        function pad2(n) { n = String(n || '0'); return n.padStart(2, '0'); }
+        function normalizeMovieTitle(value) {
+            const original = String(value || '').trim();
+            let title = original;
+            // TMDB Chinese titles may append Japanese/foreign aliases in trailing brackets.
+            for (let i = 0; i < 4; i++) {
+                const next = title.replace(/\s*[\(（][^()（）]*[\)）]\s*$/, '').trim()
+                    .replace(/\s*[\[【][^\[\]【】]*[\]】]\s*$/, '').trim();
+                if (next === title) break;
+                title = next;
+            }
+            return title || original;
+        }
+        function natCmp(a, b) {
+            const x = (a && a.name != null ? a.name : a) || '';
+            const y = (b && b.name != null ? b.name : b) || '';
+            return String(x).localeCompare(String(y), undefined, { numeric: true, sensitivity: 'base' });
+        }
+
+createApp({
+    setup() {
+        // ---------- 全局状态 ----------
+        const loggedIn = ref(false);
+        const loading = ref(false);
+        const committing = ref(false);
+        const currentPath = ref('/');
+        const directories = ref([]);
+        const files = ref([]);
+        const rows = ref([]);
+        const health = reactive({ logged_in: false, user: '', openlist_ok: false });
+        const settings = reactive({ tmdb_api_key:'', delimiter:'.', use_episode_title:true, default_season:'1', default_episode_start:'1', theme:'light' });
+        const mediaParams = ref([]);
+        const paramDraft = ref('');
+        const mediaPresets = ['1080p', '4K', 'HDR', 'HDR10', 'DV', 'DTS-HD', 'BluRay', 'REMUX', '中英字幕'];
+        function togglePreset(pr) {
+            const i = mediaParams.value.indexOf(pr);
+            if (i >= 0) mediaParams.value.splice(i, 1);
+            else mediaParams.value.push(pr);
+        }
+        async function addParam() {
+            const v = paramDraft.value.trim();
+            if (!v) return;
+            if (!mediaParams.value.includes(v)) mediaParams.value.push(v);
+            paramDraft.value = '';
+            await nextTick();
+        }
+        function backspaceParam() {
+            if (paramDraft.value) return;
+            if (mediaParams.value.length) mediaParams.value.pop();
+        }
+        const epStart = ref(1);
+        const useTitle = ref(true);
+        const sidebarCol = ref(false);
+        const toolsOpen = ref(true);
+
+        const loginForm = reactive({ base_url:'', username:'', password:'' });
+        const loggingIn = ref(false);
+        const loginError = ref('');
+
+        const tmdb = reactive({
+            mode:'tv', keyword:'', season:1, results:[], selected:null,
+            searching:false, fetching:false, episodes:{}, epCount:0, source:''
+        });
+
+        const settingsOpen = ref(false);
+        const savingSet = ref(false);
+        const setForm = reactive({ tmdb_api_key:'', delimiter:'.' });
+
+        const renamingDir = ref(false);
+        const newDirName = ref('');
+
+        // ---------- 计算 ----------
+        const dirName = computed(() => dirNameOf(currentPath.value));
+        const rowsCount = computed(() => rows.value.length);
+        const renameableCount = computed(() =>
+            rows.value.filter(r => previewName(r) && previewName(r) !== r.name).length);
+
+        const crumbPath = computed(() => currentPath.value === '/' ? ['/'] : currentPath.value.split('/').filter(Boolean));
+        function crumbs(n) {
+            if (n === crumbPath.value.length - 1 && crumbPath.value[0] === '/') return '/';
+            return '/' + crumbPath.value.slice(0, n + 1).join('/');
+        }
+        function mediaExt(name) {
+            const m = name.toLowerCase().match(/\.[a-z0-9]+$/i);
+            return m && MEDIA_EXTS.includes(m[0].slice(1)) ? m[0] : '';
+        }
+        function previewName(r) {
+            const d = settings.delimiter || '.';
+            const info = r.info || {};
+            const title = info.title || 'UNKNOWN';
+            if (tmdb.mode === 'movie') {
+                let movieName = normalizeMovieTitle(title);
+                if (r.tags && r.tags.trim()) movieName += d + r.tags.trim().split(/[,，;；]/).map(t => t.trim()).filter(Boolean).join(d);
+                const old = r.name, ext = old.substring(old.lastIndexOf('.'));
+                return movieName + ext;
+            }
+            let name = title + d + 'S' + pad2(info.season) + 'E' + pad2(info.episode);
+            if (useTitle.value && r.ep_title && r.ep_title.trim()) name += d + r.ep_title.trim();
+            if (r.tags && r.tags.trim()) name += d + r.tags.trim().split(/[,，;；|]/).map(t => t.trim()).filter(Boolean).join(d);
+            const old = r.name, ext = old.substring(old.lastIndexOf('.'));
+            return name + ext;
+        }
+
+        // ---------- 登录 ----------
+        async function doLogin() {
+            loginError.value = '';
+            if (!loginForm.username || !loginForm.password) { loginError.value = '请输入用户名和密码'; return; }
+            if (!loginForm.base_url) loginForm.base_url = 'http://127.0.0.1:5244';
+            loggingIn.value = true;
+            try {
+                const res = await axios.post('/api/login', loginForm, { timeout: 20000 });
+                if (res.data.success) {
+                    localStorage.setItem('ol_base', loginForm.base_url);
+                    localStorage.setItem('ol_user', loginForm.username);
+                    localStorage.setItem('ol_pass', btoa(unescape(encodeURIComponent(loginForm.password))));
+                    await afterLogin();
+                } else {
+                    loginError.value = res.data.message || '登录失败，请检查 OpenList 访问令牌与密码';
+                }
+            } catch (e) {
+                loginError.value = e.response?.data?.detail || e.message || '网络错误';
+            } finally { loggingIn.value = false; }
+        }
+        async function afterLogin() {
+            loggedIn.value = true;
+            await Promise.all([loadConfig(), checkHealth()]);
+            await reload();
+        }
+        async function logout() {
+            await fetch('/api/logout', { method: 'POST' }).catch(() => {});
+            localStorage.removeItem('ol_base');
+            localStorage.removeItem('ol_user');
+            localStorage.removeItem('ol_pass');
+            loggedIn.value = false;
+            Object.assign(health, { logged_in: false, user: '', openlist_ok: false });
+            directories.value = []; files.value = []; rows.value = [];
+        }
+
+        // ---------- 目录列表 ----------
+        async function reload() {
+            loading.value = true;
+            tmdb.episodes = {}; tmdb.epCount = 0; tmdb.source = '';
+            try {
+                const res = await axios.post('/api/list', { path: currentPath.value });
+                directories.value = (res.data.directories || []).slice().sort(natCmp);
+                files.value = (res.data.files || []).slice().sort(natCmp);
+                await buildRows();
+            } catch (e) {
+                const d = e.response?.data?.detail;
+                if (d && /令牌|过期|token|expired|unauthorized/i.test(d)) {
+                    ElMessage.error('OpenList 会话已失效，请重新登录');
+                    logout();
+                } else ElMessage.error('加载目录失败：' + (d || e.message));
+            } finally { loading.value = false; }
+        }
+        async function buildRows() {
+            const media = files.value.filter(f => MEDIA_RE.test(f.name));
+            rows.value = files.value.map(f => ({
+                name: f.name, valid: true, info: {}, ep_title: '', tags: ''
+            }));
+            if (!files.value.length) return;
+            try {
+                const res = await axios.post('/api/extract_info', { filenames: files.value.map(f => f.name) });
+                let idx = 0;
+                for (const r of res.data.results || []) {
+                    const row = rows.value.find(x => x.name === r.filename);
+                    if (!row) continue;
+                    row.info = r.info || {}; row.valid = !!r.valid;
+                    if (row.info.season == null || row.info.season === '') row.info.season = r.valid ? row.info.season : (tmdb.season || settings.default_season || '1');
+                    if (!r.valid) {
+                        row.info.season = row.info.season || (tmdb.season || settings.default_season || '1');
+                        row.info.episode = String((parseInt(epStart.value) || 1) + idx);
+                    }
+                    idx++;
+                }
+            } catch (e) { /* 提取失败不阻塞，默认值兜底 */ }
+        }
+        function openDir(path) { renamingDir.value = false; newDirName.value = ''; currentPath.value = path; reload(); }
+        function navigateTo(p) { if (p !== currentPath.value) openDir(p); }
+        function goUp() { const p = parentOf(currentPath.value); if (p !== currentPath.value) openDir(p); }
+        function scrollToFile(name) {
+            const el = document.getElementById('row-' + name);
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        // ---------- 目录重命名 ----------
+        async function renameDir(d) {
+            const parent = parentOf(d.path) || '/';
+            ElMessageBox.prompt('将「' + d.name + '」重命名为：', '重命名目录', {
+                inputValue: d.name, confirmButtonText: '重命名', cancelButtonText: '取消',
+                inputPattern: /.+/, inputErrorMessage: '名称不能为空'
+            }).then(async ({ value }) => {
+                if (value === d.name) return;
+                committing.value = true;
+                try {
+                    const res = await axios.post('/api/rename', {
+                        path: parent, renames: [{ old_name: d.name, new_name: value }]
+                    });
+                    if (res.data.success) {
+                        ElMessage.success('目录已重命名为「' + value + '」');
+                        if (currentPath.value.startsWith(d.path)) openDir(parent + '/' + value);
+                        else reload();
+                    } else ElMessage.error(res.data.message || '重命名失败');
+                } catch (e) { ElMessage.error('重命名失败：' + (e.response?.data?.detail || e.message)); }
+                finally { committing.value = false; }
+            }).catch(() => {});
+        }
+        function commitDirRename() {
+            const parent = parentOf(currentPath.value);
+            committing.value = true;
+            axios.post('/api/rename', { path: parent, renames: [{ old_name: dirName.value, new_name: newDirName.value.trim() }] })
+                .then(res => {
+                    if (res.data.success) {
+                        ElMessage.success('目录已重命名');
+                        renamingDir.value = false; newDirName.value = '';
+                        openDir(parent + '/' + newDirName.value || parent + '/' + dirName.value);
+                    } else ElMessage.error(res.data.message || '重命名失败');
+                })
+                .catch(e => ElMessage.error('重命名失败：' + (e.response?.data?.detail || e.message)))
+                .finally(() => { committing.value = false; });
+        }
+        function cancelDirRename() { renamingDir.value = false; newDirName.value = ''; reload(); }
+
+        // ---------- 提交重命名 ----------
+        async function commitRename() {
+            const mapping = {};
+            for (const r of rows.value) {
+                const nn = previewName(r);
+                if (nn && nn !== r.name) mapping[r.name] = nn;
+            }
+            if (!Object.keys(mapping).length) { ElMessage.info('没有需要重命名的文件'); return; }
+            committing.value = true;
+            try {
+                const res = await axios.post('/api/rename', { path: currentPath.value, renames:
+                    Object.entries(mapping).map(([old_name, new_name]) => ({ old_name, new_name })) });
+                if (res.data.success) {
+                    ElMessage.success('重命名成功：' + res.data.renamed_count + '/' + res.data.total);
+                    await Promise.all([reload(), checkHealth()]);
+                } else {
+                    ElMessage.error('部分失败：' + (res.data.errors || []).slice(0, 3).join('；') || res.data.message || '未知错误');
+                    await reload();
+                }
+            } catch (e) {
+                ElMessage.error('提交失败：' + (e.response?.data?.detail || e.message));
+            } finally { committing.value = false; }
+        }
+
+        // ---------- 批量操作 ----------
+        function normalizeNum(r, key) {
+            r.info[key] = String(r.info[key] || '').replace(/[^\d]/g, '').slice(0, 3);
+        }
+        async function fillFromSelection() {
+            if (!tmdb.selected) { ElMessage.warning('请先在 TMDB 搜索并选择剧集'); return; }
+            if (!Object.keys(tmdb.episodes).length) {
+                if (tmdb.fetching) { ElMessage.info('正在获取集名，请稍候…'); return; }
+                await tmdbFetch();
+            }
+            const epsSize = Object.keys(tmdb.episodes).length;
+            if (!epsSize) { ElMessage.error('未获取到集名，请检查网络或 API Key'); return; }
+            const season = String(tmdb.season || 1);
+            let n = 0;
+            for (const r of rows.value) {
+                r.info.title = tmdb.selected.name;
+                if (r.info.season === '' || r.info.season == null) r.info.season = season;
+                const ep = r.info.episode ? parseInt(String(r.info.episode), 10) : (parseInt(epStart.value) || 1) + n;
+                r.info.episode = ep;
+                const t = tmdb.episodes[String(ep)];
+                if (useTitle.value && t) r.ep_title = String(t).trim();
+                n++;
+            }
+            syncEpisodes();
+            ElMessage.success('已填充「' + tmdb.selected.name + '」共 ' + rows.value.length + ' 行，预览列已更新');
+        }
+        function applyTags() {
+            const joined = mediaParams.value.join(',');
+            for (const r of rows.value) r.tags = joined;
+            syncEpisodes();
+            if (mediaParams.value.length) ElMessage.success('参数已应用到 ' + rowsCount.value + ' 行');
+            else ElMessage.info('已清空文件列表参数');
+        }
+        function applyEpisodeNumbers() {
+            if (!rows.value.length) { ElMessage.warning('当前没有可应用的文件'); return; }
+            const season = String(tmdb.season || 1);
+            const start = parseInt(epStart.value) || 1;
+            const groups = [];
+            const seen = {};
+            for (const r of rows.value) {
+                const key = String(r.name).replace(/\.[^.]+$/, '').toLowerCase();
+                if (!seen[key]) { seen[key] = true; groups.push(key); }
+            }
+            let ep = start;
+            for (const key of groups) {
+                for (const r of rows.value) {
+                    if (String(r.name).replace(/\.[^.]+$/, '').toLowerCase() === key) {
+                        r.info.season = season;
+                        r.info.episode = String(ep);
+                    }
+                }
+                ep++;
+            }
+            syncEpisodes();
+            ElMessage.success('已应用：第 ' + season + ' 季，从第 ' + start + ' 集连续编号，共 ' + groups.length + ' 个文件（同名的 .srt/.ass 等视为同一文件）');
+        }
+        function syncEpisodes() {
+            const bcount = {};
+            for (const r of rows.value) {
+                const b = String(r.name).replace(/\.[^.]+$/, '').toLowerCase();
+                bcount[b] = (bcount[b] || 0) + 1;
+            }
+            const groups = {};
+            for (let i = 0; i < rows.value.length; i++) {
+                const r = rows.value[i];
+                const b = String(r.name).replace(/\.[^.]+$/, '').toLowerCase();
+                let key;
+                if (bcount[b] > 1) {
+                    key = 'b' + b;
+                } else {
+                    const s = String(r.info.season || '').padStart(2, '0');
+                    const e = String(r.info.episode || '').padStart(2, '0');
+                    key = (s && s !== '00' && e && e !== '00') ? 's' + s + 'e' + e : 'b' + b;
+                }
+                (groups[key] = groups[key] || []).push(i);
+            }
+            for (const g of Object.values(groups)) {
+                if (g.length < 2) continue;
+                const anchor = rows.value[g[0]];
+                const titled = g.map(i => rows.value[i]).find(x => String(x.ep_title || '').trim());
+                for (const i of g) {
+                    const r = rows.value[i];
+                    r.info.title = anchor.info.title;
+                    r.info.season = anchor.info.season;
+                    r.info.episode = anchor.info.episode;
+                    r.tags = anchor.tags;
+                    r.ep_title = titled && titled !== r ? titled.ep_title : r.ep_title;
+                }
+            }
+        }
+
+        // ---------- TMDB ----------
+        function selectTmdbResult(result) {
+            tmdb.selected = result;
+            if (tmdb.mode === 'movie') fillMovieTitle();
+        }
+        function setTmdbMode(mode) {
+            if (mode !== 'tv' && mode !== 'movie') return;
+            tmdb.mode = mode;
+            tmdb.results = []; tmdb.selected = null;
+            tmdb.episodes = {}; tmdb.epCount = 0; tmdb.source = '';
+            syncEpisodes();
+        }
+        async function tmdbSearch() {
+            if (!tmdb.keyword.trim()) return;
+            tmdb.searching = true; tmdb.results = []; tmdb.selected = null;
+            tmdb.episodes = {}; tmdb.epCount = 0;
+            try {
+                const res = await axios.post('/api/tmdb_search', {
+                    keyword: tmdb.keyword.trim(), media_type: tmdb.mode
+                }, { timeout: 30000 });
+                tmdb.results = res.data.results || [];
+                tmdb.source = res.data.source || '';
+                if (tmdb.results.length === 1) selectTmdbResult(tmdb.results[0]);
+            } catch (e) {
+                ElMessage.error('TMDB 搜索失败：' + (e.response?.data?.detail || e.message));
+            } finally { tmdb.searching = false; }
+        }
+        async function tmdbFetch() {
+            if (!tmdb.selected || tmdb.mode !== 'tv') return;
+            tmdb.fetching = true;
+            try {
+                const res = await axios.post('/api/tmdb_fetch', {
+                    series_id: tmdb.selected.id, season: parseInt(tmdb.season) || 1
+                }, { timeout: 30000 });
+                tmdb.episodes = res.data.episodes || {};
+                tmdb.epCount = Object.keys(tmdb.episodes).length;
+                tmdb.source = res.data.source || '';
+                if (tmdb.epCount) {
+                    ElMessage.success('已获取第 ' + tmdb.season + ' 季 ' + tmdb.epCount + ' 个集名');
+                    await fillFromSelection();
+                } else ElMessage.warning('未获取到第 ' + tmdb.season + ' 季的集名');
+            } catch (e) {
+                ElMessage.error('TMDB 集名获取失败：' + (e.response?.data?.detail || e.message));
+            } finally { tmdb.fetching = false; }
+        }
+        function fillMovieTitle() {
+            if (!tmdb.selected || tmdb.mode !== 'movie') return;
+            const title = normalizeMovieTitle(tmdb.selected.name);
+            if (!title) return;
+            for (const r of rows.value) {
+                r.info.title = title;
+                r.info.season = '';
+                r.info.episode = '';
+                r.ep_title = '';
+            }
+            syncEpisodes();
+            ElMessage.success('已填充电影名「' + title + '」，请确认预览后重命名');
+        }
+
+        // ---------- 设置 ----------
+        function openSettings() {
+            Object.assign(setForm, { tmdb_api_key: settings.tmdb_api_key || '', delimiter: settings.delimiter || '.' });
+            settingsOpen.value = true;
+        }
+        async function saveSettings() {
+            savingSet.value = true;
+            try {
+                const body = {
+                    tmdb_api_key: setForm.tmdb_api_key,
+                    delimiter: setForm.delimiter || '.'
+                };
+                const res = await axios.post('/api/config', body);
+                Object.assign(settings, res.data.settings || body);
+                settingsOpen.value = false;
+                ElMessage.success('设置已保存');
+            } catch (e) {
+                ElMessage.error('保存设置失败：' + (e.response?.data?.detail || e.message));
+            } finally { savingSet.value = false; }
+        }
+        async function loadConfig() {
+            try {
+                const res = await axios.get('/api/config');
+                Object.assign(settings, res.data.settings || {});
+                applyTheme(settings.theme);
+                useTitle.value = settings.use_episode_title !== false;
+                if (parseInt(settings.default_season) >= 1) tmdb.season = parseInt(settings.default_season);
+                if (parseInt(settings.default_episode_start) >= 1) epStart.value = parseInt(settings.default_episode_start);
+            } catch (e) { /* 未登录时保持默认 */ }
+        }
+        function toggleTheme() {
+            settings.theme = settings.theme === 'dark' ? 'light' : 'dark';
+            applyTheme(settings.theme);
+            axios.post('/api/config', { theme: settings.theme }).catch(() => {});
+        }
+        function applyTheme(t) {
+            document.documentElement.setAttribute('data-theme', t || 'light');
+        }
+
+        // ---------- 健康检查 ----------
+        async function checkHealth() {
+            try {
+                const res = await axios.get('/api/health');
+                Object.assign(health, res.data || {});
+            } catch (e) {
+                Object.assign(health, { logged_in: false, user: '', openlist_ok: false });
+            }
+        }
+
+        // ---------- 启动 ----------
+        onMounted(async () => {
+            const u = localStorage.getItem('ol_user'), p = localStorage.getItem('ol_pass'), b = localStorage.getItem('ol_base');
+            if (u && p) {
+                loginForm.base_url = b || 'http://127.0.0.1:5244';
+                loginForm.username = u;
+                loginForm.password = decodeURIComponent(escape(atob(p)));
+                loggingIn.value = true;
+                try {
+                    const res = await axios.post('/api/login', loginForm, { timeout: 20000 });
+                    if (res.data.success) await afterLogin();
+                } catch (e) { /* 自动登录失败，显示登录页 */ }
+                finally { loggingIn.value = false; }
+            }
+        });
+
+        return {
+            loggedIn, loading, committing, currentPath, directories, files, rows, health, settings,
+            mediaParams, paramDraft, epStart, useTitle, sidebarCol, toolsOpen, loginForm, loggingIn, loginError, tmdb,
+            settingsOpen, savingSet, setForm, renamingDir, newDirName,
+            dirName, rowsCount, renameableCount, crumbPath,
+            crumbs, mediaExt, previewName, humanSize,
+            doLogin, logout, reload, buildRows, openDir, navigateTo, goUp, scrollToFile,
+            renameDir, commitDirRename, cancelDirRename, commitRename,
+            normalizeNum, fillFromSelection, addParam, backspaceParam, togglePreset,
+            mediaPresets, applyTags, applyEpisodeNumbers,
+            tmdbSearch, tmdbFetch, setTmdbMode, selectTmdbResult, fillMovieTitle, openSettings, saveSettings, toggleTheme, checkHealth,
+            Search
+        };
+    }
+}).use(ElementPlus).use(ElementPlusIconsVue).mount('#app');
+</script>
+</body>
+</html>
