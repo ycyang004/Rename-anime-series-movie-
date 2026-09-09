@@ -1,0 +1,31 @@
+# 开发容器编排：一键构建并启动开发环境
+#   docker compose -f docker-compose.dev.yml up -d --build  启动
+#   docker compose -f docker-compose.dev.yml logs -f        查看日志
+#   docker compose -f docker-compose.dev.yml exec dev bash  进入容器
+#   docker compose -f docker-compose.dev.yml down           停止
+#
+# 说明：
+#   - 8000 端口映射到宿主机 http://127.0.0.1:8000
+#     （不要用 --network host——Docker Desktop 下宿主机会访问不到）
+#   - 登录 OpenList：填 http://host.docker.internal:5244（extra_hosts 已配置，指向宿主机）。
+#     只要 OpenList 把 5244 映射到宿主机即可连上，与它的容器名/网络无关；
+#     若 OpenList 恰好也是名为 openlist 的容器，可另行 docker network connect 后
+#     用 http://openlist:5244 直连（可选）。
+#   - 项目根目录挂载到容器 /work，修改代码实时生效
+services:
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    image: openlist-episode-renamer:dev
+    container_name: openlist-episode-renamer-dev
+    command: ["python", "server.py", "0.0.0.0", "8000"]
+    ports:
+      - "8000:8000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./:/work
+    working_dir: /work
+    stdin_open: true
+    tty: true

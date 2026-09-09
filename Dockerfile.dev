@@ -1,0 +1,15 @@
+# 开发用容器：python:3.12-slim + 项目依赖
+FROM python:3.12-slim
+
+# 基础工具
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        git curl \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /work
+
+# 项目依赖（README 列出的）
+RUN pip install --no-cache-dir \
+        requests fastapi "uvicorn[standard]" beautifulsoup4
+
+CMD ["bash"]

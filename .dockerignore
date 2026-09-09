@@ -1,0 +1,16 @@
+.git
+.gitignore
+README.md
+__pycache__/
+dist/
+build/
+*.pyc
+*.spec
+packaging/
+USERPROFILE/
+image/
+docker-compose*.yml
+Dockerfile
+.env/
+episode_renamer.settings.json
+token

@@ -1,0 +1,18 @@
+services:
+  openlist-episode-renamer:
+    build: .
+    image: openlist-episode-renamer:latest
+    container_name: openlist-episode-renamer
+    ports:
+      - "8000:8000"
+    environment:
+      - EPISODE_PATH=/data
+    volumes:
+      - ep-data:/data   # 持久化设置/令牌（episode_renamer.*.json、token）
+    # 允许容器内通过 host.docker.internal 访问宿主机上的 OpenList(如 127.0.0.1:5244)
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+volumes:
+  ep-data:
